@@ -27,4 +27,41 @@
       font-weight: bold;
     }
     audio {
-      margin-top: 30p
+      margin-top: 30px;
+      width: 80%;
+    }
+    button {
+      background-color: #f39c12;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #fff;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 Karaoke - I Gotta Feeling</h1>
+  <p>Cante junto com o Black Eyed Peas!</p>
+
+  <button id="playButton">▶️ Cantar</button>
+  <audio id="audio" controls style="display:none;"></audio>
+
+  <div id="lyrics"></div>
+
+  <script>
+    const song = {
+      title: "I Gotta Feeling - Black Eyed Peas",
+      // Use um link de áudio livre (exemplo genérico)
+      audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+      lyrics: [
+        "I gotta feeling",
+        "That tonight's gonna be a good night",
+        "That tonight's gonna be a good night",
+        "That tonight's gonna be a good, good night",
+
+        "Tonight's the night, let's live it up",
+        "I got my money, let's spend it up",
+        "Go out and smash it, like oh my God",
