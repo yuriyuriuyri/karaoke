@@ -1,115 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Karaokê Online</title>
+  <title>Karaoke - I Gotta Feeling</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #2c3e50, #3498db);
-      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
       text-align: center;
-      padding: 30px;
+      padding: 40px;
     }
     h1 {
       font-size: 2.5em;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
     #lyrics {
-      margin-top: 20px;
+      margin-top: 40px;
       font-size: 1.5em;
-      line-height: 1.5;
+      line-height: 1.6;
       white-space: pre-line;
     }
     .highlight {
       color: #ffeb3b;
       font-weight: bold;
     }
-    button {
-      background-color: #ff4081;
-      border: none;
-      padding: 10px 20px;
-      color: white;
-      font-size: 1em;
-      border-radius: 5px;
-      cursor: pointer;
-      margin: 10px;
-    }
-    select {
-      font-size: 1em;
-      padding: 8px;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-  <h1>🎤 Karaokê Online</h1>
-  <p>Escolha uma música e cante junto!</p>
-
-  <select id="songSelect">
-    <option value="none">-- Selecione uma música --</option>
-    <option value="song1">Evidências (Chitãozinho & Xororó)</option>
-    <option value="song2">Garota de Ipanema</option>
-  </select>
-  <br>
-  <button id="playButton">▶️ Cantar</button>
-
-  <div id="lyrics"></div>
-  <audio id="audio" controls style="margin-top:20px; display:none;"></audio>
-
-  <script>
-    const lyricsData = {
-      song1: {
-        audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // exemplo
-        lyrics: [
-          "Quando eu digo que deixei de te amar",
-          "É porque eu te amo...",
-          "Quando eu digo que não quero mais você",
-          "É porque eu te quero..."
-        ]
-      },
-      song2: {
-        audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-        lyrics: [
-          "Olha que coisa mais linda",
-          "Mais cheia de graça",
-          "É ela menina",
-          "Que vem e que passa..."
-        ]
-      }
-    };
-
-    const select = document.getElementById('songSelect');
-    const button = document.getElementById('playButton');
-    const lyricsDiv = document.getElementById('lyrics');
-    const audio = document.getElementById('audio');
-
-    button.addEventListener('click', () => {
-      const songKey = select.value;
-      if (songKey === 'none') {
-        alert("Escolha uma música!");
-        return;
-      }
-
-      const song = lyricsData[songKey];
-      lyricsDiv.textContent = '';
-      audio.src = song.audio;
-      audio.style.display = 'block';
-      audio.play();
-
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < song.lyrics.length) {
-          lyricsDiv.innerHTML = song.lyrics
-            .map((line, i) => i === index ? `<span class='highlight'>${line}</span>` : line)
-            .join('\n');
-          index++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 3000);
-    });
-  </script>
-</body>
-</html>
+    audio {
+      margin-top: 30p
