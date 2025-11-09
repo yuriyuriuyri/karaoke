@@ -1,3 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karaokê Interativo</title>
+  <style>
+    /* Estilo moderno e responsivo */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #2b5876, #4e4376);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .controls {
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      border-radius: 5px;
+      border: none;
+      background-color: #ff4081;
+      color: white;
+      cursor: pointer;
+      font-size: 1em;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background-color: #e73370;
+    }
+
+    #lyrics {
+      width: 90%;
+      max-width: 700px;
+      margin: 20px 0;
+      font-size: 1.5em;
+      line-height: 1.8;
+      background: rgba(0,0,0,0.3);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .highlight {
+      color: #00ff00; /* Letra cantada */
+      font-weight: bold;
+    }
+
+    audio {
+      margin-top: 10px;
+      width: 90%;
+      max-width: 700px;
+    }
+
+    @media (max-width: 600px) {
+      #lyrics {
+        font-size: 1.2em;
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎤 Karaokê Interativo</h1>
+
+  <div class="controls">
+    <!-- Upload de música -->
+    <input type="file" id="audioUpload" accept="audio/*">
+
+    <!-- Botão para processar a música -->
+    <button id="processButton">Gerar Letra</button>
+
+    <!-- Botões de gravação e sincronização -->
+    <button id="startRecording">Iniciar Sincronização Manual</button>
+    <button id="saveProject">Salvar Projeto</button>
+    <button id="loadProject">Carregar Projeto</button>
+  </div>
+
+  <!-- Player de áudio -->
+  <audio id="audio" controls></audio>
+
+  <!-- Exibição da letra -->
+  <div id="lyrics">A letra aparecerá aqui...</div>
+
+  <script>
+    const audioUpload = document.getElementById('audioUpload');
+    const processButton = document.getElementById('processButton');
+    const audio = document.getElementById('audio');
+    const lyricsDiv = document.getElementById('lyrics');
+    const startRecordingButton = document.getElementById('startRecording');
+    const saveButton = document.getElementById('saveProject');
+    const loadButton = document.getElementById('loadProject');
+
+    let lyrics = []; // Armazena a letra como array de linhas
+    let timings = []; // Armazena os tempos de cada linha
+    let interval = null;
+    let recordingMode = false;
+
+    // Função para converter arquivo para URL e tocar
+    audioUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if(file){
+        const url = URL.createObjectURL(file);
+        audio.src = url;
+      }
+    });
+
+    // Placeholder: Processar música e gerar letra automaticamente
+    // Aqui você deve integrar uma API de transcrição, como OpenAI Whisper, AssemblyAI, Deepgram, etc.
+    processButton.addEventListener('click', async () => {
+      if(!audio.src){
+        alert("Faça upload de uma música primeiro!");
+        return;
+      }
+
+      // Simulação de letra para teste
+      lyrics = [
+        "Esta é a primeira linha",
+        "Segunda linha do karaokê",
+        "Terceira linha para cantar",
+        "Quarta linha final"
+      ];
+
+      // Inicializa tempos padrão (3 segundos por linha)
+      timings = lyrics.map((_, i) => i * 3);
+
+      displayLyrics();
+      alert("Letra gerada! Você pode ajustar os tempos manualmente.");
+    });
+
+    // Exibe a letra no div, com destaque conforme tempo
+    function displayLyrics() {
+      lyricsDiv.innerHTML = lyrics.map((line, index) => `<span data-index="${index}">${line}</span>`).join('<br>');
+    }
+
+    // Sincronização automática (simples) de acordo com o áudio
+    audio.addEventListener('play', () => {
+      if(interval) clearInterval(interval);
+      let currentLine = 0;
+
+      interval = setInterval(() => {
+        const currentTime = audio.currentTime;
+
+        if(currentLine < timings.length && currentTime >= timings[currentLine]){
+          // Remove destaque das outras linhas
+          document.querySelectorAll('#lyrics span').forEach(span => span.classList.remove('highlight'));
+
+          // Destaca a linha atual
+          const currentSpan = document.querySelector(`#lyrics span[data-index="${currentLine}"]`);
+          if(currentSpan) currentSpan.classList.add('highlight');
+
+          currentLine++;
+        }
+
+        // Para quando a música terminar
+        if(currentLine >= timings.length){
+          clearInterval(interval);
+        }
+      }, 200);
+    });
+
+    audio.addEventListener('pause', () => {
+      if(interval) clearInterval(interval);
+    });
+
+    // Modo de gravação de sincronia manual
+    startRecordingButton.addEventListener('click', () => {
+      if(!audio.src){
+        alert("Faça upload de uma música primeiro!");
+        return;
+      }
+
+      recordingMode = !recordingMode;
+      if(recordingMode){
+        startRecordingButton.textContent = "Parar Sincronização Manual";
+        timings = [];
+        let lineIndex = 0;
+
+        lyricsDiv.querySelectorAll('span').forEach(span => {
+          span.onclick = () => {
+            if(recordingMode){
+              timings[lineIndex] = audio.currentTime;
+              console.log(`Linha ${lineIndex} sincronizada em ${audio.currentTime.toFixed(2)}s`);
+              lineIndex++;
+            }
+          };
+        });
+        alert("Clique em cada linha quando estiver cantando para sincronizar o tempo.");
+      } else {
+        startRecordingButton.textContent = "Iniciar Sincronização Manual";
+        lyricsDiv.querySelectorAll('span').forEach(span => span.onclick = null);
+      }
+    });
+
+    // Salvar projeto no localStorage
+    saveButton.addEventListener('click', () => {
+      const project = {lyrics, timings, audioSrc: audio.src};
+      localStorage.setItem('karaokeProject', JSON.stringify(project));
+      alert("Projeto salvo!");
+    });
+
+    // Carregar projeto do localStorage
+    loadButton.addEventListener('click', () => {
+      const project = JSON.parse(localStorage.getItem('karaokeProject'));
+      if(project){
+        lyrics = project.lyrics;
+        timings = project.timings;
+        audio.src = project.audioSrc;
+        displayLyrics();
+        alert("Projeto carregado!");
+      } else {
+        alert("Nenhum projeto salvo encontrado.");
+      }
+    });
+
+  </script>
+</body>
+</html>
+
+
 <iframe width="560" height="315"
 src="https://www.youtube.com/embed/uSD4vsh1zDA"
 title="I Gotta Feeling - The Black Eyed Peas"
