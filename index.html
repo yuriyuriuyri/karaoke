@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Karaokê Completo com Salvamento</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: #eee;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    color: #00ff99;
+  }
+  #lyrics {
+    margin-top: 30px;
+    font-size: 22px;
+    line-height: 1.6em;
+    white-space: pre-line;
+  }
+  .highlight {
+    color: #00ff99;
+  }
+  .clickable {
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  .clickable:hover {
+    color: #00ccff;
+  }
+  textarea, input, select {
+    width: 90%;
+    margin: 5px 0;
+  }
+  button {
+    margin: 5px;
+    padding: 8px 15px;
+    background-color: #00ff99;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #00cc7a;
+  }
+</style>
+</head>
+<body>
+<h1>🎤 Meu Karaokê Completo</h1>
+
+<h3>Escolha o tipo de música:</h3>
+<select id="musicType">
+  <option value="original">🎧 Música com voz</option>
+  <option value="instrumental">🎤 Versão sem voz</option>
+</select><br><br>
+
+<label>Música com voz:</label><br>
+<input type="file" id="audioOriginal" accept="audio/*"><br><br>
+
+<label>Música sem voz (instrumental):</label><br>
+<input type="file" id="audioInstrumental" accept="audio/*"><br><br>
+
+<audio id="player" controls></audio>
+
+<h3>Digite a letra (uma linha por trecho):</h3>
+<textarea id="lyricsInput" rows="8" placeholder="Uma linha por trecho da música"></textarea><br>
+
+<button id="generateBtn">Gerar linhas</button>
+<button id="recordBtn">🎬 Gravar sincronia</button>
+<button id="startBtn">▶️ Reproduzir com sincronia</button>
+<button id="saveBtn">💾 Salvar projeto</button>
+<button id="loadBtn">📂 Carregar projeto</button>
+
+<div id="lyrics"></div>
+
+<script>
+let lines = [];
+let times = [];
+let recording = false;
+const player = document.getElementById('player');
+const lyricsDiv = document.getElementById('lyrics');
+const musicType = document.getElementById('musicType');
+let selectedAudioSrc = '';
+
+document.getElementById('audioOriginal').addEventListener('change', (e) => {
+  if (musicType.value === 'original') {
+    selectedAudioSrc = URL.createObjectURL(e.target.files[0]);
+    player.src = selectedAudioSrc;
+  }
+});
+
+document.getElementById('audioInstrumental').addEventListener('change', (e) => {
+  if (musicType.value === 'instrumental') {
+    selectedAudioSrc = URL.createObjectURL(e.target.files[0]);
+    player.src = selectedAudioSrc;
+  }
+});
+
+musicType.addEventListener('change', () => {
+  if (musicType.value === 'original') {
+    const file = document.getElementById('audioOriginal').files[0];
+    if (file) player.src = URL.createObjectURL(file);
+  } else {
+    const file = document.getElementById('audioInstrumental').files[0];
+    if (file) player.src = URL.createObjectURL(file);
+  }
+});
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  const text = document.getElementById('lyricsInput').value.trim();
+  lines = text.split('\n');
+  times = new Array(lines.length).fill(0);
+  lyricsDiv.innerHTML = lines.map((l, i) => `<div class="clickable" data-index="${i}">${l}</div>`).join('');
+});
+
+document.getElementById('recordBtn').addEventListener('click', () => {
+  if (!player.src) {
+    alert("Escolha uma música primeiro!");
+    return;
+  }
+  if (lines.length === 0) {
+    alert("Digite a letra e clique em 'Gerar linhas' antes!");
+    return;
+  }
+
+  recording = true;
+  times = new Array(lines.length).fill(0);
+  alert("🎬 Modo de gravação: clique nas linhas nos momentos certos da música.");
+  player.currentTime = 0;
+  player.play();
+
+  document.querySelectorAll('.clickable').forEach(line => {
+    line.addEventListener('click', () => {
+      if (recording) {
+        const idx = line.dataset.index;
+        times[idx] = player.currentTime;
+        line.classList.add('highlight');
+      }
+    });
+  });
+
+  player.onended = () => {
+    recording = false;
+    alert("✅ Gravação concluída!");
+    console.log("Tempos capturados:", times);
+  };
+});
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  if (times.every(t => t === 0)) {
+    alert("Você ainda não gravou os tempos! Use 'Gravar sincronia' primeiro.");
+    return;
+  }
+  player.currentTime = 0;
+  player.play();
+  highlightLyrics();
+});
+
+function highlightLyrics() {
+  let currentLine = 0;
+  player.ontimeupdate = () => {
+    if (currentLine < times.length && player.currentTime >= times[currentLine]) {
+      const divs = lyricsDiv.querySelectorAll('div');
+      divs.forEach(d => d.classList.remove('highlight'));
+      divs[currentLine].classList.add('highlight');
+      currentLine++;
+    }
+  };
+}
+
+// 💾 SALVAR PROJETO
+document.getElementById('saveBtn').addEventListener('click', () => {
+  if (!lines.length || times.every(t => t === 0)) {
+    alert("Crie e sincronize a música antes de salvar!");
+    return;
+  }
+
+  const project = {
+    lyrics: lines,
+    times: times,
+    type: musicType.value,
+    date: new Date().toISOString()
+  };
+
+  localStorage.setItem('karaokeProject', JSON.stringify(project));
+  alert("💾 Projeto salvo no navegador!");
+});
+
+// 📂 CARREGAR PROJETO
+document.getElementById('loadBtn').addEventListener('click', () => {
+  const saved = localStorage.getItem('karaokeProject');
+  if (!saved) {
+    alert("Nenhum projeto salvo encontrado!");
+    return;
+  }
+
+  const project = JSON.parse(saved);
+  lines = project.lyrics;
+  times = project.times;
+  musicType.value = project.type;
+
+  document.getElementById('lyricsInput').value = lines.join('\n');
+  lyricsDiv.innerHTML = lines.map((l, i) => `<div>${l}</div>`).join('');
+  alert("📂 Projeto carregado! Agora selecione a música correspondente e clique em ▶️ para tocar.");
+});
+</script>
+</body>
+</html>
